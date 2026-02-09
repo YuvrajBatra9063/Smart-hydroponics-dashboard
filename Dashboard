@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Hydroponics Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: linear-gradient(rgba(0,80,0,0.6), rgba(0,80,0,0.6)),
+      url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6");
+      background-size: cover;
+      color: white;
+    }
+
+    .container {
+      background: rgba(0,0,0,0.6);
+      width: 420px;
+      margin: 60px auto;
+      padding: 25px;
+      border-radius: 12px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .on { background: #2ecc71; color: white; }
+    .off { background: #e74c3c; color: white; }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🌱 Smart Hydroponics Dashboard</h2>
+
+  <div class="card">
+    <h3>Temperature: <span id="temp">--</span> °C</h3>
+    <h3>Humidity: <span id="hum">--</span> %</h3>
+    <h3>Water Level: <span id="water">--</span></h3>
+    <h3>Pump Status: <span id="pump">OFF</span></h3>
+  </div>
+
+  <h3>Control Panel</h3>
+  <button class="on" onclick="pumpOn()">START PUMP</button>
+  <button class="off" onclick="pumpOff()">STOP PUMP</button>
+
+  <p>System Status: NORMAL</p>
+</div>
+
+<script>
+function updateData(){
+  document.getElementById("temp").innerText =
+    Math.floor(Math.random()*6)+25;
+
+  document.getElementById("hum").innerText =
+    Math.floor(Math.random()*20)+50;
+
+  let level = Math.random();
+  document.getElementById("water").innerText =
+    level > 0.5 ? "SAFE" : "LOW";
+}
+
+setInterval(updateData, 2000);
+
+function pumpOn(){
+  document.getElementById("pump").innerText="ON";
+}
+
+function pumpOff(){
+  document.getElementById("pump").innerText="OFF";
+}
+</script>
+
+</body>
+</html>
