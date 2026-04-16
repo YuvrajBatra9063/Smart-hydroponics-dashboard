@@ -1,87 +1,79 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Smart Hydroponics Dashboard</title>
-
+  <title>Hydroponics Dashboard</title>
   <style>
     body {
       font-family: Arial;
       text-align: center;
-      background: linear-gradient(rgba(0,80,0,0.6), rgba(0,80,0,0.6)),
-      url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6");
-      background-size: cover;
+      background: black;
       color: white;
     }
-
-    .container {
-      background: rgba(0,0,0,0.6);
-      width: 420px;
-      margin: 60px auto;
-      padding: 25px;
-      border-radius: 12px;
-    }
-
-    .card {
-      background: rgba(255,255,255,0.1);
-      padding: 15px;
-      border-radius: 8px;
+    .box {
+      margin-top: 100px;
+      font-size: 20px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="box">
   <h2>🌱 Smart Hydroponics Dashboard</h2>
 
-  <div class="card">
-    <h3>Temperature: <span id="temp">--</span> °C</h3>
-    <h3>Humidity: <span id="hum">--</span> %</h3>
-    <h3>Water Level: <span id="water">--</span> cm</h3>
-    <h3>Pump Status: <span id="pump">--</span></h3>
-  </div>
-
-  <p>System Status: LIVE</p>
+  <p>Temperature: <span id="temp">Loading...</span></p>
+  <p>Humidity: <span id="hum">Loading...</span></p>
+  <p>Water Level: <span id="water">Loading...</span></p>
+  <p>Pump: <span id="pump">--</span></p>
 </div>
 
 <script>
 async function getData() {
   try {
-    const url = "https://api.thingspeak.com/channels/3332344/feeds.json?api_key=70625VXMQNFXP7XD";
-    const res = await fetch(url);
+    const res = await fetch("https://api.thingspeak.com/channels/3332344/feeds.json?api_key=70625VXMQNFXP7XD");
     const data = await res.json();
 
-    if (!data.feeds || data.feeds.length === 0) return;
+    if (!data.feeds || data.feeds.length === 0) {
+      showNoData();
+      return;
+    }
 
-    // last valid entry (ignore nan / null / empty)
-    let last = [...data.feeds].reverse().find(f =>
-      f.field1 && f.field2 && f.field3 &&
-      f.field1 !== "nan" && f.field2 !== "nan" && f.field3 !== "nan"
-    );
-
-    if (!last) return;
+    let last = data.feeds[data.feeds.length - 1];
 
     let temp = parseFloat(last.field1);
     let hum = parseFloat(last.field2);
     let water = parseFloat(last.field3);
 
-    document.getElementById("temp").innerText = isNaN(temp) ? "--" : temp;
-    document.getElementById("hum").innerText = isNaN(hum) ? "--" : hum;
-    document.getElementById("water").innerText = isNaN(water) ? "--" : water;
+    if (isNaN(temp) || isNaN(hum) || isNaN(water) || temp === 0) {
+      showNoData();
+      return;
+    }
+
+    document.getElementById("temp").innerText = temp;
+    document.getElementById("hum").innerText = hum;
+    document.getElementById("water").innerText = water;
 
     let pump = document.getElementById("pump");
 
-    if (!isNaN(water) && water < 10) {
+    if (water < 10) {
       pump.innerText = "ON";
       pump.style.color = "red";
     } else {
       pump.innerText = "OFF";
-      pump.style.color = "lightgreen";
+      pump.style.color = "green";
     }
 
   } catch (e) {
-    console.log("Error:", e);
+    console.log(e);
+    showNoData();
   }
+}
+
+function showNoData() {
+  document.getElementById("temp").innerText = "No Data";
+  document.getElementById("hum").innerText = "No Data";
+  document.getElementById("water").innerText = "No Data";
+  document.getElementById("pump").innerText = "--";
 }
 
 setInterval(getData, 5000);
