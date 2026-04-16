@@ -1,30 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Hydroponics Dashboard</title>
+  <title>Smart Hydroponics Dashboard</title>
+
   <style>
     body {
       font-family: Arial;
       text-align: center;
-      background: black;
+      background: linear-gradient(rgba(0,80,0,0.6), rgba(0,80,0,0.6)),
+      url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6");
+      background-size: cover;
       color: white;
     }
-    .box {
-      margin-top: 100px;
-      font-size: 20px;
+
+    .container {
+      background: rgba(0,0,0,0.6);
+      width: 420px;
+      margin: 60px auto;
+      padding: 25px;
+      border-radius: 12px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 8px;
     }
   </style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="container">
   <h2>🌱 Smart Hydroponics Dashboard</h2>
 
-  <p>Temperature: <span id="temp">Loading...</span></p>
-  <p>Humidity: <span id="hum">Loading...</span></p>
-  <p>Water Level: <span id="water">Loading...</span></p>
-  <p>Pump: <span id="pump">--</span></p>
+  <div class="card">
+    <h3>Temperature: <span id="temp">Loading...</span> °C</h3>
+    <h3>Humidity: <span id="hum">Loading...</span> %</h3>
+    <h3>Water Level: <span id="water">Loading...</span> cm</h3>
+    <h3>Pump Status: <span id="pump">--</span></h3>
+  </div>
+
+  <p>System Status: LIVE</p>
 </div>
 
 <script>
@@ -38,29 +55,43 @@ async function getData() {
       return;
     }
 
-    let last = data.feeds[data.feeds.length - 1];
+    let valid = null;
 
-    let temp = parseFloat(last.field1);
-    let hum = parseFloat(last.field2);
-    let water = parseFloat(last.field3);
+    // last valid entry find karo
+    for (let i = data.feeds.length - 1; i >= 0; i--) {
+      let f = data.feeds[i];
 
-    if (isNaN(temp) || isNaN(hum) || isNaN(water) || temp === 0) {
+      if (
+        f.field1 && f.field2 && f.field3 &&
+        f.field1 !== "nan" && f.field2 !== "nan" && f.field3 !== "nan" &&
+        f.field1 !== "0.00"
+      ) {
+        valid = f;
+        break;
+      }
+    }
+
+    if (!valid) {
       showNoData();
       return;
     }
 
-    document.getElementById("temp").innerText = temp;
-    document.getElementById("hum").innerText = hum;
-    document.getElementById("water").innerText = water;
+    let temp = parseFloat(valid.field1);
+    let hum = parseFloat(valid.field2);
+    let water = parseFloat(valid.field3);
+
+    document.getElementById("temp").innerText = isNaN(temp) ? "--" : temp;
+    document.getElementById("hum").innerText = isNaN(hum) ? "--" : hum;
+    document.getElementById("water").innerText = isNaN(water) ? "--" : water;
 
     let pump = document.getElementById("pump");
 
-    if (water < 10) {
+    if (!isNaN(water) && water < 10) {
       pump.innerText = "ON";
       pump.style.color = "red";
     } else {
       pump.innerText = "OFF";
-      pump.style.color = "green";
+      pump.style.color = "lightgreen";
     }
 
   } catch (e) {
