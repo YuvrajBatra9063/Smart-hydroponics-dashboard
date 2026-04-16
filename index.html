@@ -1,24 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Hydroponics Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+      background: linear-gradient(rgba(0,80,0,0.6), rgba(0,80,0,0.6)),
+      url("https://images.unsplash.com/photo-1501004318641-b39e6451bec6");
+      background-size: cover;
+      color: white;
+    }
+
+    .container {
+      background: rgba(0,0,0,0.6);
+      width: 420px;
+      margin: 60px auto;
+      padding: 25px;
+      border-radius: 12px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.1);
+      padding: 15px;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🌱 Smart Hydroponics Dashboard</h2>
+
+  <div class="card">
+    <h3>Temperature: <span id="temp">--</span> °C</h3>
+    <h3>Humidity: <span id="hum">--</span> %</h3>
+    <h3>Water Level: <span id="water">--</span> cm</h3>
+    <h3>Pump Status: <span id="pump">--</span></h3>
+  </div>
+
+  <p>System Status: LIVE</p>
+</div>
+
 <script>
 async function getData() {
   try {
     let response = await fetch("https://api.thingspeak.com/channels/3332344/feeds.json?api_key=70625VXMQNFXP7XD");
     let data = await response.json();
 
+    // Safety check
+    if (!data.feeds || data.feeds.length === 0) {
+      console.log("No data found");
+      return;
+    }
+
     let last = data.feeds[data.feeds.length - 1];
 
-    let temp = last.field1;
-    let hum = last.field2;
-    let water = last.field3;
+    let temp = last.field1 || "--";
+    let hum = last.field2 || "--";
+    let water = last.field3 || "--";
 
     document.getElementById("temp").innerText = temp;
     document.getElementById("hum").innerText = hum;
     document.getElementById("water").innerText = water;
 
-    // Pump logic (auto)
-    if (water < 10) {
-      document.getElementById("pump").innerText = "ON";
+    // Pump logic
+    let pump = document.getElementById("pump");
+
+    if (water !== "--" && Number(water) < 10) {
+      pump.innerText = "ON";
+      pump.style.color = "red";
     } else {
-      document.getElementById("pump").innerText = "OFF";
+      pump.innerText = "OFF";
+      pump.style.color = "lightgreen";
     }
 
   } catch (error) {
@@ -26,7 +82,10 @@ async function getData() {
   }
 }
 
-// Auto refresh every 5 seconds
+// Refresh every 5 sec
 setInterval(getData, 5000);
 getData();
 </script>
+
+</body>
+</html>
